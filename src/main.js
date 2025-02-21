@@ -2,7 +2,6 @@ import * as THREE from "three";
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
-
 scene.fog = new THREE.FogExp2(0x000000, 0.02);
 
 const camera = new THREE.PerspectiveCamera(
@@ -23,9 +22,7 @@ const spacing = 4;
 
 function createPortalRing() {
   const geometry = new THREE.TorusGeometry(2, 0.1, 16, 100);
-  const material = new THREE.MeshBasicMaterial({
-    color: 0x00ffff,
-  });
+  const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
   const ringMesh = new THREE.Mesh(geometry, material);
 
   const glowMaterial = new THREE.MeshBasicMaterial({
@@ -69,7 +66,6 @@ function createDigitTexture(digit) {
   const context = canvas.getContext("2d");
 
   context.clearRect(0, 0, size, size);
-
   context.font = "12px monospace";
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -91,13 +87,11 @@ function createBinaryStarField() {
     });
 
     const sprite = new THREE.Sprite(material);
-
     sprite.position.set(
       (Math.random() - 0.5) * 200,
       (Math.random() - 0.5) * 200,
       (Math.random() - 0.5) * 200
     );
-
     sprite.scale.set(2, 2, 1);
 
     scene.add(sprite);
@@ -115,7 +109,6 @@ scene.add(pointLight);
 
 const cameraMaxZ = 6;
 const cameraMinZ = -((ringCount - 1) * spacing) - 2;
-
 let cameraTargetZ = camera.position.z;
 
 const keys = {
@@ -133,6 +126,52 @@ document.addEventListener("keyup", (event) => {
 
 const clock = new THREE.Clock();
 const keySpeed = 30.0;
+
+// Mouse control variables
+let isDragging = false;
+let previousMousePosition = {
+  x: 0,
+  y: 0,
+};
+
+renderer.domElement.addEventListener("mousedown", (event) => {
+  isDragging = true;
+});
+
+renderer.domElement.addEventListener("mousemove", (event) => {
+  if (isDragging) {
+    const deltaMove = {
+      x: event.movementX || event.mozMovementX || event.webkitMovementX || 0,
+      y: event.movementY || event.mozMovementY || event.webkitMovementY || 0,
+    };
+
+    const deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(
+        toRadians(deltaMove.y * 1),
+        toRadians(deltaMove.x * 1),
+        0,
+        "XYZ"
+      )
+    );
+
+    cube.quaternion.multiplyQuaternions(
+      deltaRotationQuaternion,
+      cube.quaternion
+    );
+  }
+});
+
+renderer.domElement.addEventListener("mouseup", () => {
+  isDragging = false;
+});
+
+renderer.domElement.addEventListener("mouseleave", () => {
+  isDragging = false;
+});
+
+function toRadians(angle) {
+  return angle * (Math.PI / 180);
+}
 
 function animate() {
   requestAnimationFrame(animate);

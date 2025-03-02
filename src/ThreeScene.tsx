@@ -2,37 +2,29 @@ import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { gsap } from "gsap";
 
-// ── SINGLETON DECLARATIONS ──
-// These module‑level variables ensure that the scene is created only once.
 let rendererSingleton: THREE.WebGLRenderer | null = null;
 let sceneSingleton: THREE.Scene | null = null;
 let cameraSingleton: THREE.PerspectiveCamera | null = null;
 
-// We'll also store some objects created during initialization.
 let ringsSingleton: THREE.Group[] = [];
 let cubeSingleton: THREE.Mesh | null = null;
 let cubeMaterialSingleton: THREE.MeshStandardMaterial | null = null;
 let smallCubeGroupSingleton: THREE.Group | null = null;
 
-// Control variables (only created once)
 let cameraTargetZ = 6;
 const keys: { [key: string]: boolean } = {
   ArrowUp: false,
   ArrowDown: false,
 };
 
-// Only perform initialization once.
 if (!rendererSingleton) {
-  // Create renderer.
   rendererSingleton = new THREE.WebGLRenderer({ antialias: true });
   rendererSingleton.setSize(window.innerWidth, window.innerHeight);
 
-  // Create scene.
   sceneSingleton = new THREE.Scene();
   sceneSingleton.background = new THREE.Color(0x000000);
   sceneSingleton.fog = new THREE.FogExp2(0x000000, 0.02);
 
-  // Create camera.
   cameraSingleton = new THREE.PerspectiveCamera(
     60,
     window.innerWidth / window.innerHeight,
@@ -41,7 +33,6 @@ if (!rendererSingleton) {
   );
   cameraSingleton.position.set(0, 0, 6);
 
-  // ── INITIALIZE THE RING TUNNEL ──
   const ringCount = 23;
   const spacing = 4;
   ringsSingleton = [];
@@ -73,7 +64,6 @@ if (!rendererSingleton) {
     ringsSingleton.push(ring);
   }
 
-  // ── CREATE THE MAIN CUBE ──
   const cubeGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
   cubeMaterialSingleton = new THREE.MeshStandardMaterial({
     color: 0xffffff,
@@ -86,22 +76,24 @@ if (!rendererSingleton) {
   cubeSingleton.position.z = -(ringCount * spacing) - 2;
   sceneSingleton!.add(cubeSingleton);
 
-  // ── CREATE BINARY STAR FIELD ──
   function createDigitTexture(digit: string): THREE.CanvasTexture {
-    const size = 64;
+    const size = 128;
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
     const context = canvas.getContext("2d");
     if (context) {
       context.clearRect(0, 0, size, size);
-      context.font = "12px monospace";
+      context.font = "bold 48px monospace";
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.fillStyle = "#ffffff";
       context.fillText(digit, size / 2, size / 2);
     }
-    return new THREE.CanvasTexture(canvas);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.needsUpdate = true;
+    return texture;
   }
 
   function createBinaryStarField() {
@@ -125,14 +117,12 @@ if (!rendererSingleton) {
   }
   createBinaryStarField();
 
-  // ── LIGHTS ──
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
   sceneSingleton!.add(ambientLight);
   const pointLight = new THREE.PointLight(0x00ffff, 1, 10);
   pointLight.position.set(0, 2, 2);
   sceneSingleton!.add(pointLight);
 
-  // ── EVENT LISTENERS FOR KEYBOARD ──
   const keyDownHandler = (event: KeyboardEvent) => {
     if (event.key in keys) keys[event.key] = true;
   };
@@ -142,7 +132,6 @@ if (!rendererSingleton) {
   document.addEventListener("keydown", keyDownHandler);
   document.addEventListener("keyup", keyUpHandler);
 
-  // ── MOUSE DRAG (attached to the renderer’s canvas) ──
   let isDragging = false;
   rendererSingleton.domElement.addEventListener("mousedown", () => {
     isDragging = true;
@@ -178,7 +167,6 @@ if (!rendererSingleton) {
     return angle * (Math.PI / 180);
   }
 
-  // ── BREAK CUBE FUNCTION ──
   const cubePosition = cubeSingleton!.position.clone();
   function breakCubeIntoSmallerCubes() {
     if (!cubeSingleton) return;
@@ -202,15 +190,20 @@ if (!rendererSingleton) {
       [halfSubCube, halfSubCube, halfSubCube],
     ];
 
+    const colors = [
+      0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500,
+      0x800080,
+    ];
+
     const smallCubes: THREE.Mesh[] = [];
-    offsets.forEach((offset) => {
+    offsets.forEach((offset, index) => {
       const geometry = new THREE.BoxGeometry(
         subCubeSize,
         subCubeSize,
         subCubeSize
       );
       const material = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
+        color: colors[index],
         emissive: 0x000000,
         emissiveIntensity: 0.0,
         transparent: true,
@@ -222,6 +215,15 @@ if (!rendererSingleton) {
       smallCubeGroupSingleton!.add(smallCube);
       smallCubes.push(smallCube);
     });
+
+    const sphereLight = new THREE.PointLight(0xffffff, 3, 20);
+    sphereLight.position.set(0, 0, 0);
+    smallCubeGroupSingleton!.add(sphereLight);
+
+    const sphereGeometry = new THREE.SphereGeometry(subCubeSize * 0.3, 32, 16);
+    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphereLight.add(sphereMesh);
 
     smallCubes.forEach((smallCube) => {
       const { offset } = smallCube.userData;
@@ -235,7 +237,6 @@ if (!rendererSingleton) {
     });
   }
 
-  // ── RAYCASTING FOR CLICKS ──
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   const clickHandler = (event: MouseEvent) => {
@@ -259,7 +260,6 @@ if (!rendererSingleton) {
   };
   window.addEventListener("click", clickHandler);
 
-  // ── ANIMATION LOOP ──
   const clock = new THREE.Clock();
   const keySpeed = 30.0;
   const animate = () => {
@@ -289,7 +289,6 @@ if (!rendererSingleton) {
   animate();
 }
 
-// ── REACT COMPONENT ──
 const ThreeScene: React.FC = () => {
   const mountRef = useRef<HTMLDivElement>(null);
 

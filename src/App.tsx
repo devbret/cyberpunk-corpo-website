@@ -1,11 +1,17 @@
 import React from "react";
-import ThreeScene from "./ThreeScene";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ThreeScene from "./components/ThreeScene";
+import AboutUs from "./components/AboutUs";
+import "./App.css";
 
 const App: React.FC = () => {
   return (
-    <div>
-      <ThreeScene />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<ThreeScene />} />
+        <Route path="/about-us" element={<AboutUs />} />
+      </Routes>
+    </Router>
   );
 };
 

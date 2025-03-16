@@ -69,14 +69,27 @@ export function breakCubeIntoSmallerCubes(
       smallCube.userData.destination = "/about-us";
     }
 
-    smallCubeGroup.add(smallCube);
+    const cubeContainer = new THREE.Group();
+    cubeContainer.add(smallCube);
+    smallCubeGroup.add(cubeContainer);
 
-    gsap.to(smallCube.position, {
+    gsap.to(cubeContainer.position, {
       duration: 1,
       x: offset[0] * 4,
       y: offset[1] * 4,
       z: offset[2] * 4,
       ease: "power2.out",
+    });
+
+    const vibrationMagnitude = 0.13;
+    gsap.to(smallCube.position, {
+      duration: 0.0023,
+      x: `+=${(Math.random() - 0.5) * vibrationMagnitude}`,
+      y: `+=${(Math.random() - 0.5) * vibrationMagnitude}`,
+      z: `+=${(Math.random() - 0.5) * vibrationMagnitude}`,
+      repeat: -1,
+      yoyo: true,
+      ease: "power1.inOut",
     });
   });
 

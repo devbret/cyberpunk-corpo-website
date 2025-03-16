@@ -20,7 +20,7 @@ export function createDigitTexture(digit: string): THREE.CanvasTexture {
   return texture;
 }
 
-export function createBinaryStarField(scene: THREE.Scene, starCount = 10000) {
+export function createBinaryStarField(scene: THREE.Scene, starCount = 4300) {
   for (let i = 0; i < starCount; i++) {
     const digit = Math.random() < 0.5 ? "0" : "1";
     const texture = createDigitTexture(digit);

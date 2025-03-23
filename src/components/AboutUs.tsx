@@ -1,11 +1,29 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 
+let renderer: THREE.WebGLRenderer | null = null;
+let canvasAppended = false;
+
 const AboutUs: React.FC = () => {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
+
+    if (!renderer) {
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+    }
+
+    if (
+      !canvasAppended &&
+      renderer &&
+      !mountRef.current.contains(renderer.domElement)
+    ) {
+      mountRef.current.appendChild(renderer.domElement);
+      canvasAppended = true;
+    }
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
@@ -14,27 +32,25 @@ const AboutUs: React.FC = () => {
       0.1,
       100
     );
-    camera.position.set(0, 0, 6);
+    camera.position.z = 6;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    mountRef.current.appendChild(renderer.domElement);
-
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff5500 });
-    const cube = new THREE.Mesh(geometry, material);
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(2, 2, 2),
+      new THREE.MeshBasicMaterial({ color: 0xff5500 })
+    );
     scene.add(cube);
 
+    let animationFrameId: number;
     const animate = () => {
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
       cube.rotation.x += 0.01;
       cube.rotation.y += 0.01;
-      renderer.render(scene, camera);
+      renderer!.render(scene, camera);
     };
     animate();
 
     const handleResize = () => {
-      if (!mountRef.current) return;
+      if (!renderer || !mountRef.current) return;
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -43,17 +59,13 @@ const AboutUs: React.FC = () => {
     window.addEventListener("resize", handleResize);
 
     return () => {
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
-      mountRef.current?.removeChild(renderer.domElement);
-      renderer.dispose();
+      scene.clear();
     };
   }, []);
 
-  return (
-    <div>
-      <div ref={mountRef} style={{ width: "100vw", height: "100vh" }} />
-    </div>
-  );
+  return <div ref={mountRef} style={{ width: "100vw", height: "100vh" }} />;
 };
 
 export default AboutUs;

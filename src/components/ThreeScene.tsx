@@ -35,6 +35,7 @@ const ThreeScene: React.FC = () => {
 
   const [deptOpen, setDeptOpen] = useState(false);
   const [activeDept, setActiveDept] = useState<Department | null>(null);
+  const [hudVisible, setHudVisible] = useState(true);
 
   const deptAnchorRef = useRef<THREE.Vector3 | null>(null);
 
@@ -155,12 +156,28 @@ const ThreeScene: React.FC = () => {
     glitchEnabledRef.current = true;
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "g") {
+      const k = e.key.toLowerCase();
+
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA")
+      )
+        return;
+
+      if (k === "g") {
         glitchEnabledRef.current = !glitchEnabledRef.current;
         glitchRef.current?.setEnabled(glitchEnabledRef.current);
         glitchRef.current?.setAmount(glitchEnabledRef.current ? 0.35 : 0.0);
       }
+
+      if (k === "h") {
+        setHudVisible((v) => !v);
+      }
     };
+
+    window.addEventListener("keydown", onKey);
+
     window.addEventListener("keydown", onKey);
 
     const renderWithGlitch = {
@@ -202,7 +219,7 @@ const ThreeScene: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      <Hud showInitially />
+      {hudVisible && <Hud showInitially />}
 
       {deptOpen && activeDept && (
         <div

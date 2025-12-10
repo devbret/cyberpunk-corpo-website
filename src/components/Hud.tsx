@@ -14,7 +14,7 @@ const overlayBase: React.CSSProperties = {
   position: "absolute",
   top: 16,
   left: 16,
-  width: "min(243px, 90vw)",
+  width: "min(343px, 90vw)",
   zIndex: 10,
   color: "#e8eef6",
   fontFamily:
@@ -67,7 +67,7 @@ export default function Hud({ showInitially = true, onToggle }: HudProps) {
             <kbd>↓</kbd> Move backward.
           </li>
           <li>
-            <kbd>Click</kbd> Shatter main cube.
+            <kbd>Click</kbd> Shatter main cube and open display.
           </li>
           <li>
             <kbd>Mouse</kbd> Rotate orbit.

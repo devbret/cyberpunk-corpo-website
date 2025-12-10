@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { Department } from "./cube";
 
 export const keys: { [key: string]: boolean } = {
   ArrowUp: false,
@@ -16,12 +17,48 @@ export function setupKeyEvents() {
   document.addEventListener("keyup", keyUpHandler);
 }
 
+type UserDataWithDepartment = { department?: unknown };
+
+function hasDepartmentUserData(obj: THREE.Object3D): obj is THREE.Object3D & {
+  userData: UserDataWithDepartment;
+} {
+  const ud = obj.userData as unknown as UserDataWithDepartment;
+  return ud.department !== undefined;
+}
+
+function isDepartment(value: unknown): value is Department {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.code === "string" &&
+    typeof v.name === "string" &&
+    typeof v.path === "string" &&
+    typeof v.color === "number" &&
+    typeof v.blurb === "string"
+  );
+}
+
+function findDepartment(obj: THREE.Object3D): Department | null {
+  let cur: THREE.Object3D | null = obj;
+  while (cur) {
+    const ud = cur.userData as unknown as UserDataWithDepartment;
+    if (isDepartment(ud.department)) return ud.department;
+    cur = cur.parent;
+  }
+  return null;
+}
+
 export function setupMouseEvents(
   rendererDom: HTMLElement,
   camera: THREE.PerspectiveCamera,
   cubeRef: { current: THREE.Mesh | null },
   smallCubeGroupRef: { current: THREE.Group | null },
-  onCubeClick: () => void
+  onCubeClick: () => void,
+  onDeptClick?: (
+    dept: Department,
+    obj: THREE.Object3D,
+    point: THREE.Vector3
+  ) => void
 ): () => void {
   let isMouseDown = false;
   let isDragging = false;
@@ -67,9 +104,7 @@ export function setupMouseEvents(
 
   const onMouseup = (event: MouseEvent) => {
     if (!isMouseDown) return;
-    if (!isDragging) {
-      handleClick(event);
-    }
+    if (!isDragging) handleClick(event);
     isMouseDown = false;
     isDragging = false;
   };
@@ -98,22 +133,55 @@ export function setupMouseEvents(
         smallCubeGroupRef.current.children,
         true
       );
-      if (intersects.length > 0) {
-        const clickedCube = intersects[0].object;
-        const destination = clickedCube.userData?.destination;
-        if (destination) {
-          window.location.href = destination;
-        } else {
-          console.log("Small cube clicked, but no destination set.");
+      if (!intersects.length) return;
+
+      type DeptHit = {
+        dept: Department;
+        root: THREE.Object3D;
+        point: THREE.Vector3;
+        screenDist2: number;
+      };
+
+      const uniqueByRoot = new Map<string, DeptHit>();
+
+      for (const hit of intersects) {
+        const dept = findDepartment(hit.object);
+        if (!dept) continue;
+
+        let root: THREE.Object3D = hit.object;
+        while (root.parent && !hasDepartmentUserData(root)) {
+          root = root.parent;
         }
-        return;
+
+        const p = hit.point.clone().project(camera);
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const screenDist2 = dx * dx + dy * dy;
+
+        const existing = uniqueByRoot.get(root.uuid);
+        if (!existing || screenDist2 < existing.screenDist2) {
+          uniqueByRoot.set(root.uuid, {
+            dept,
+            root,
+            point: hit.point.clone(),
+            screenDist2,
+          });
+        }
       }
+
+      const candidates = Array.from(uniqueByRoot.values());
+      if (!candidates.length) return;
+
+      candidates.sort((a, b) => a.screenDist2 - b.screenDist2);
+      const chosen = candidates[0];
+
+      onDeptClick?.(chosen.dept, chosen.root, chosen.point);
+      return;
     }
+
     if (cubeRef.current) {
       const intersects = raycaster.intersectObject(cubeRef.current, true);
-      if (intersects.length > 0) {
-        onCubeClick();
-      }
+      if (intersects.length > 0) onCubeClick();
     }
   }
 

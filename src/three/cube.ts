@@ -93,7 +93,7 @@ export type CompanyGlyphOptions = {
 export function createCube(
   ringCount: number,
   spacing: number,
-  company: CompanyGlyphOptions = {}
+  company: CompanyGlyphOptions = {},
 ) {
   const cubeGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
   const cubeMaterial = new THREE.MeshPhysicalMaterial({
@@ -122,14 +122,14 @@ export function createCube(
   });
   const edges = new THREE.LineSegments(
     new THREE.EdgesGeometry(cubeGeometry, 30),
-    edgeMat
+    edgeMat,
   );
   cube.add(edges);
 
   const innerLight = new THREE.PointLight(0x66eeff, 2.2, 8, 2);
   const coreMesh = new THREE.Mesh(
     new THREE.SphereGeometry(0.18, 24, 16),
-    new THREE.MeshBasicMaterial({ color: 0x88ffff })
+    new THREE.MeshBasicMaterial({ color: 0x88ffff }),
   );
   innerLight.add(coreMesh);
   cube.add(innerLight);
@@ -176,7 +176,7 @@ export function createCube(
 export function breakCubeIntoSmallerCubes(
   cube: THREE.Mesh,
   scene: THREE.Scene,
-  cubePosition: THREE.Vector3
+  cubePosition: THREE.Vector3,
 ) {
   if (cube.parent) cube.parent.remove(cube);
   cube.onBeforeRender = () => {};
@@ -206,13 +206,13 @@ export function breakCubeIntoSmallerCubes(
   });
   const wave = new THREE.Mesh(
     new THREE.TorusGeometry(0.6, 0.02, 12, 64),
-    waveMat
+    waveMat,
   );
   smallCubeGroup.add(wave);
   gsap.fromTo(
     wave.scale,
     { x: 0.01, y: 0.01, z: 0.01 },
-    { x: 8, y: 8, z: 8, duration: 0.9, ease: "power2.out" }
+    { x: 8, y: 8, z: 8, duration: 0.9, ease: "power2.out" },
   );
   gsap.to(waveMat, {
     opacity: 0,
@@ -271,7 +271,7 @@ export function breakCubeIntoSmallerCubes(
         opacity: 0.8,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
-      })
+      }),
     );
     smallCube.add(edge);
 
@@ -310,7 +310,7 @@ export function breakCubeIntoSmallerCubes(
         y: Math.random() * Math.PI,
         z: Math.random() * Math.PI,
       },
-      { x: 0, y: 0, z: 0, duration: 1.2, ease: "power2.out" }
+      { x: 0, y: 0, z: 0, duration: 1.2, ease: "power2.out" },
     );
 
     const vibrationMagnitude = 0.13;
@@ -360,7 +360,7 @@ export function breakCubeIntoSmallerCubes(
   gsap.fromTo(
     sphereMesh.scale,
     { x: 0.6, y: 0.6, z: 0.6 },
-    { x: 1.4, y: 1.4, z: 1.4, duration: 0.8, ease: "power2.out" }
+    { x: 1.4, y: 1.4, z: 1.4, duration: 0.8, ease: "power2.out" },
   );
   gsap.to(sphereMaterial, {
     opacity: 0.2,

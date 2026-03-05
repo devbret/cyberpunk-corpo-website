@@ -93,7 +93,7 @@ export function createPortalRing(
   }: Pick<
     PortalRingsOptions,
     "baseRadius" | "tube" | "coreColor" | "emissive" | "glowColor"
-  > = {}
+  > = {},
 ): UpdatableGroup {
   const geometry = new THREE.TorusGeometry(baseRadius, tube, 32, 256);
 
@@ -149,7 +149,7 @@ export function createPortalRing(
 
 export function addPortalRings(
   scene: THREE.Scene,
-  opts: PortalRingsOptions = {}
+  opts: PortalRingsOptions = {},
 ) {
   const {
     ringCount = 23,
@@ -191,7 +191,7 @@ export function addPortalRings(
 export function applyPortalFog(
   scene: THREE.Scene,
   color = 0x04060a,
-  density = 0.06
+  density = 0.06,
 ) {
   scene.fog = new THREE.FogExp2(color, density);
 }

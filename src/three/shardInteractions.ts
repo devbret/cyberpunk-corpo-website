@@ -15,7 +15,7 @@ export function setupShardInteractions(
     navigate: (path: string) => void;
     setGlitchAmount?: (v: number) => void;
     flightSeconds?: number;
-  }
+  },
 ): ShardInteractions {
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
@@ -89,7 +89,7 @@ export function setupShardInteractions(
         duration: flightSeconds,
         ease: "power3.in",
       },
-      0
+      0,
     );
     tl.to(
       {},
@@ -99,7 +99,7 @@ export function setupShardInteractions(
           camera.lookAt(lookStart);
         },
       },
-      0
+      0,
     );
   }
 

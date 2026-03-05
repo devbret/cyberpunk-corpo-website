@@ -115,7 +115,7 @@ const ThreeScene: React.FC = () => {
         const smallCubeGroup = breakCubeIntoSmallerCubes(
           cubeRef.current,
           scene,
-          cubePosition
+          cubePosition,
         );
         cubeRef.current = null;
         smallCubeGroupRef.current = smallCubeGroup;
@@ -141,7 +141,7 @@ const ThreeScene: React.FC = () => {
           modalRef.current.style.left = `${x}px`;
           modalRef.current.style.top = `${y}px`;
         }
-      }
+      },
     );
 
     const handleResize = () => sizeToContainer();
@@ -178,8 +178,6 @@ const ThreeScene: React.FC = () => {
 
     window.addEventListener("keydown", onKey);
 
-    window.addEventListener("keydown", onKey);
-
     const renderWithGlitch = {
       render: () => glitch.render(1 / 60),
     } as unknown as typeof renderer;
@@ -198,6 +196,7 @@ const ThreeScene: React.FC = () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("keydown", onKey);
       cleanupMouseEvents();
+      glitchRef.current?.dispose();
       // @ts-expect-error three
       scene.onBeforeRender = null;
       godhead.dispose();

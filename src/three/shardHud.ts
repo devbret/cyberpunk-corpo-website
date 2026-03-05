@@ -10,7 +10,7 @@ export type ShardHud = {
 function makeLabelTexture(
   title: string,
   blurb: string,
-  color: string
+  color: string,
 ): THREE.CanvasTexture {
   const w = 512,
     h = 192,

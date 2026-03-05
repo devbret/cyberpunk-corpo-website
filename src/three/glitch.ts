@@ -61,13 +61,17 @@ export type GlitchController = {
   pass: ShaderPass;
   setAmount: (v: number) => void;
   setEnabled: (on: boolean) => void;
+  setPixelRatio: (pr: number) => void;
+  setSize: (w: number, h: number, scale?: number) => void;
+  setResolutionScale: (s: number) => void;
+  dispose: () => void;
   render: (dt?: number) => void;
 };
 
 export function setupGlitchComposer(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
-  camera: THREE.Camera
+  camera: THREE.Camera,
 ): GlitchController {
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, camera);
@@ -80,11 +84,18 @@ export function setupGlitchComposer(
   glitchPass.material.uniforms.uAmount.value = 0.0;
 
   let time = 0;
+  let enabled = true;
+  let amount = 0;
+  let resolutionScale = 1;
   const render = (dt = 0.016) => {
     time += dt;
     glitchPass.material.uniforms.uTime.value = time;
 
     glitchPass.material.uniforms.uJitter.value = Math.random();
+    if (!enabled || amount <= 0.0001) {
+      renderer.render(scene, camera);
+      return;
+    }
 
     composer.render();
   };
@@ -93,14 +104,42 @@ export function setupGlitchComposer(
     composer,
     pass: glitchPass,
     setAmount: (v) => {
-      glitchPass.material.uniforms.uAmount.value = THREE.MathUtils.clamp(
-        v,
-        0,
-        1
-      );
+      amount = THREE.MathUtils.clamp(v, 0, 1);
+      glitchPass.material.uniforms.uAmount.value = amount;
     },
     setEnabled: (on) => {
+      enabled = on;
       glitchPass.enabled = on;
+    },
+    setPixelRatio: (pr) => {
+      composer.setPixelRatio(pr);
+    },
+    setSize: (w, h, scale = resolutionScale) => {
+      const sw = Math.max(1, Math.floor(w * scale));
+      const sh = Math.max(1, Math.floor(h * scale));
+      composer.setSize(sw, sh);
+    },
+    setResolutionScale: (s) => {
+      resolutionScale = s;
+      const canvas = renderer.domElement;
+      const w = canvas.clientWidth || canvas.width || window.innerWidth;
+      const h = canvas.clientHeight || canvas.height || window.innerHeight;
+      composer.setSize(
+        Math.max(1, Math.floor(w * s)),
+        Math.max(1, Math.floor(h * s)),
+      );
+    },
+    dispose: () => {
+      try {
+        if (glitchPass && glitchPass.material) glitchPass.material.dispose();
+      } catch {
+        // ignore
+      }
+      try {
+        composer.dispose();
+      } catch {
+        // ignore
+      }
     },
     render,
   };

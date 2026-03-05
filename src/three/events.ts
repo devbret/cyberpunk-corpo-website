@@ -57,8 +57,8 @@ export function setupMouseEvents(
   onDeptClick?: (
     dept: Department,
     obj: THREE.Object3D,
-    point: THREE.Vector3
-  ) => void
+    point: THREE.Vector3,
+  ) => void,
 ): () => void {
   let isMouseDown = false;
   let isDragging = false;
@@ -91,12 +91,12 @@ export function setupMouseEvents(
             toRadians(event.movementY),
             toRadians(event.movementX),
             0,
-            "XYZ"
-          )
+            "XYZ",
+          ),
         );
         cubeRef.current.quaternion.multiplyQuaternions(
           deltaRotationQuaternion,
-          cubeRef.current.quaternion
+          cubeRef.current.quaternion,
         );
       }
     }
@@ -123,7 +123,7 @@ export function setupMouseEvents(
     const rect = rendererDom.getBoundingClientRect();
     const mouse = new THREE.Vector2(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
-      -((event.clientY - rect.top) / rect.height) * 2 + 1
+      -((event.clientY - rect.top) / rect.height) * 2 + 1,
     );
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);
@@ -131,7 +131,7 @@ export function setupMouseEvents(
     if (smallCubeGroupRef.current) {
       const intersects = raycaster.intersectObjects(
         smallCubeGroupRef.current.children,
-        true
+        true,
       );
       if (!intersects.length) return;
 

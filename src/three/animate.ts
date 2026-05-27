@@ -17,7 +17,7 @@ type UpdatableGroup = THREE.Group & {
   userData: THREE.Group["userData"] & { update?: (dt: number) => void };
 };
 
-export function animate(config: AnimateConfig) {
+export function animate(config: AnimateConfig): () => void {
   const {
     renderer,
     scene,
@@ -31,8 +31,10 @@ export function animate(config: AnimateConfig) {
 
   const clock = new THREE.Clock();
   const keySpeed = 30.0;
+  let running = true;
 
   (function loop() {
+    if (!running) return;
     requestAnimationFrame(loop);
     const delta = clock.getDelta();
 
@@ -68,4 +70,8 @@ export function animate(config: AnimateConfig) {
       renderer.render(scene, camera);
     }
   })();
+
+  return () => {
+    running = false;
+  };
 }

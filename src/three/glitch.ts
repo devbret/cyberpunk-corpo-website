@@ -35,13 +35,11 @@ const GlitchShader = {
     void main() {
       vec2 uv = vUv;
 
-      // blocky UV jitter
       vec2 grid = floor(uv * uBlockiness) / uBlockiness;
       float r = rand(grid + floor(uTime));
-      float j = step(0.8, r * (0.5 + uJitter)); // occasional blocks
+      float j = step(0.8, r * (0.5 + uJitter));
       uv += (j * (r - 0.5)) * 0.02 * uAmount;
 
-      // RGB split
       float shift = uRGBShift * uAmount;
       vec4 col;
       col.r = texture2D(tDiffuse, uv + vec2( shift, 0.0)).r;
@@ -49,7 +47,6 @@ const GlitchShader = {
       col.b = texture2D(tDiffuse, uv).b;
       col.a = 1.0;
 
-      // subtle brightness flicker
       float flick = 1.0 + (rand(vec2(uTime, uv.y)) - 0.5) * 0.05 * uAmount;
       gl_FragColor = vec4(col.rgb * flick, 1.0);
     }
@@ -133,12 +130,10 @@ export function setupGlitchComposer(
       try {
         if (glitchPass && glitchPass.material) glitchPass.material.dispose();
       } catch {
-        // ignore
       }
       try {
         composer.dispose();
       } catch {
-        // ignore
       }
     },
     render,

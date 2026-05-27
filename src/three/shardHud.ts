@@ -92,7 +92,7 @@ export function createShardHud(scene: THREE.Scene): ShardHud {
     const center = bbox.getCenter(new THREE.Vector3());
     const size = bbox.getSize(new THREE.Vector3());
     group.position.copy(center).add(new THREE.Vector3(0, size.y * 0.85, 0));
-    group.lookAt(scene.position.clone().setZ(group.position.z - 10)); // approx face camera
+    group.lookAt(scene.position.clone().setZ(group.position.z - 10));
 
     const hex = `#${dept.color.toString(16).padStart(6, "0")}`;
     const tex = makeLabelTexture(dept.title, dept.blurb, hex);

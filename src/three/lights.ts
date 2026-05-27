@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export function addLights(scene: THREE.Scene) {
+export function addLights(scene: THREE.Scene): () => void {
   const ambientLight = new THREE.AmbientLight(0xa0e8ff, 0.25);
   scene.add(ambientLight);
 
@@ -27,4 +27,8 @@ export function addLights(scene: THREE.Scene) {
     rimLight.intensity = 1.5 + Math.sin(t * 2.0) * 0.3;
   };
   scene.onBeforeRender = animateLights;
+
+  return () => {
+    scene.remove(ambientLight, keyLight, fillLight, rimLight, hemiLight);
+  };
 }

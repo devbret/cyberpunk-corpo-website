@@ -44,7 +44,6 @@ function makeFresnelGlowMaterial(color = new THREE.Color(0xff00ff)) {
         vUv = uv;
         vNormal = normalize(normalMatrix * normal);
 
-        // subtle radial wobble along tubular direction (vUv.y)
         float wob = sin(vUv.y * uFreq + uTime * 1.5 + uPhase) * uAmp;
         vec3 displaced = position + normal * wob;
 
@@ -66,17 +65,15 @@ function makeFresnelGlowMaterial(color = new THREE.Color(0xff00ff)) {
       varying vec2 vUv;
 
       void main() {
-        // Fresnel rim
         float fres = pow(1.0 - max(dot(normalize(vNormal), normalize(vViewDir)), 0.0), uPower);
 
-        // Animated bands around the tube (vUv.y)
         float bands = 0.5 + 0.5 * sin(vUv.y * uBands + (uTime * uSpeed * 6.28318) + uPhase);
-        bands = pow(bands, 3.0); // sharpen
+        bands = pow(bands, 3.0);
 
         float glow = fres * 0.85 + bands * 0.5;
         vec3 col = uColor * glow;
 
-        gl_FragColor = vec4(col, glow); // alpha scales with glow for additive edges
+        gl_FragColor = vec4(col, glow);
       }
     `,
   });

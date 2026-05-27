@@ -88,7 +88,7 @@ export function createBinaryStarField(
     const material = isZero ? mat0 : mat1;
     const sprite = new THREE.Sprite(material);
 
-    const r = Math.cbrt(Math.random()) * radius; // cbrt to bias inward
+    const r = Math.cbrt(Math.random()) * radius;
     const theta = Math.acos(THREE.MathUtils.clamp(rand(-1, 1), -1, 1));
     const phi = rand(0, Math.PI * 2);
     const x = r * Math.sin(theta) * Math.cos(phi);

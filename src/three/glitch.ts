@@ -2,6 +2,8 @@ import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 
 const GlitchShader = {
   uniforms: {
@@ -65,17 +67,53 @@ export type GlitchController = {
   render: (dt?: number) => void;
 };
 
+function safely(fn: () => void): void {
+  try {
+    fn();
+  } catch {
+    return;
+  }
+}
+
+export type GlitchComposerOptions = {
+  bloom?: {
+    strength?: number;
+    radius?: number;
+    threshold?: number;
+  };
+};
+
 export function setupGlitchComposer(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
   camera: THREE.Camera,
+  opts: GlitchComposerOptions = {},
 ): GlitchController {
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, camera);
   const glitchPass = new ShaderPass(GlitchShader);
 
   composer.addPass(renderPass);
+
+  let bloomPass: UnrealBloomPass | null = null;
+  let outputPass: OutputPass | null = null;
+  if (opts.bloom) {
+    const size = renderer.getSize(new THREE.Vector2());
+    bloomPass = new UnrealBloomPass(
+      size,
+      opts.bloom.strength ?? 0.62,
+      opts.bloom.radius ?? 0.55,
+      opts.bloom.threshold ?? 0.22,
+    );
+    composer.addPass(bloomPass);
+  }
+
   composer.addPass(glitchPass);
+
+  if (opts.bloom) {
+    outputPass = new OutputPass();
+    composer.addPass(outputPass);
+  }
 
   glitchPass.enabled = true;
   glitchPass.material.uniforms.uAmount.value = 0.0;
@@ -87,9 +125,12 @@ export function setupGlitchComposer(
   const render = (dt = 0.016) => {
     time += dt;
     glitchPass.material.uniforms.uTime.value = time;
-
     glitchPass.material.uniforms.uJitter.value = Math.random();
-    if (!enabled || amount <= 0.0001) {
+
+    const glitchLive = enabled && amount > 0.0001;
+    glitchPass.enabled = glitchLive;
+
+    if (!bloomPass && !glitchLive) {
       renderer.render(scene, camera);
       return;
     }
@@ -106,7 +147,6 @@ export function setupGlitchComposer(
     },
     setEnabled: (on) => {
       enabled = on;
-      glitchPass.enabled = on;
     },
     setPixelRatio: (pr) => {
       composer.setPixelRatio(pr);
@@ -127,14 +167,10 @@ export function setupGlitchComposer(
       );
     },
     dispose: () => {
-      try {
-        if (glitchPass && glitchPass.material) glitchPass.material.dispose();
-      } catch {
-      }
-      try {
-        composer.dispose();
-      } catch {
-      }
+      safely(() => glitchPass.material?.dispose());
+      safely(() => bloomPass?.dispose());
+      safely(() => outputPass?.dispose());
+      safely(() => composer.dispose());
     },
     render,
   };

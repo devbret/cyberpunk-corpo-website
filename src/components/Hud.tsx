@@ -73,10 +73,10 @@ export default function Hud({ showInitially = true, onToggle }: HudProps) {
             <kbd>Mouse</kbd> Rotate orbit.
           </li>
           <li>
-            <kbd>H</kbd> — Toggle help.
+            <kbd>H</kbd> - Toggle help.
           </li>
           <li>
-            <kbd>G</kbd> — Toggle glitch effect.
+            <kbd>G</kbd> - Toggle glitch effect.
           </li>
         </ul>
       </div>

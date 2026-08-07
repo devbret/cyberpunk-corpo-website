@@ -11,7 +11,6 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<ThreeScene />} />
         <Route path="/about-us" element={<AboutUs />} />
-        {/* Department rooms — must come after more-specific routes */}
         <Route path="/:deptPath" element={<DepartmentRoom />} />
       </Routes>
     </Router>

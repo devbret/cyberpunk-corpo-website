@@ -153,12 +153,12 @@ export function createBinaryStarField(
 
       s.position.addScaledVector(data.drift, dt * 0.5);
 
-      const θ =
+      const theta =
         Math.atan2(s.position.y, s.position.x) +
         dt * (0.05 + data.ringRadius * 0.00005);
       const r = Math.hypot(s.position.x, s.position.y);
       const z = s.position.z + Math.sin(t * 0.5 + data.twinklePhase) * 0.02;
-      s.position.set(r * Math.cos(θ), r * Math.sin(θ), z);
+      s.position.set(r * Math.cos(theta), r * Math.sin(theta), z);
     }
   };
 

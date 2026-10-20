@@ -3,11 +3,6 @@ import React, { useEffect, useState } from "react";
 type HudProps = {
   showInitially?: boolean;
   onToggle?: (visible: boolean) => void;
-  stats?: {
-    fps?: number;
-    objects?: number;
-    triangles?: number;
-  };
 };
 
 const overlayBase: React.CSSProperties = {

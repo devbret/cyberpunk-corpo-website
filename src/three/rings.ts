@@ -184,11 +184,3 @@ export function addPortalRings(
 
   return { rings, update };
 }
-
-export function applyPortalFog(
-  scene: THREE.Scene,
-  color = 0x04060a,
-  density = 0.06,
-) {
-  scene.fog = new THREE.FogExp2(color, density);
-}

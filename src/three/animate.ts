@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { keys } from "./events";
+import type { UpdatableGroup } from "./rings";
 
 export interface AnimateConfig {
   renderer: THREE.WebGLRenderer;
@@ -12,10 +13,6 @@ export interface AnimateConfig {
 
   renderFrame?: (dt: number) => void;
 }
-
-type UpdatableGroup = THREE.Group & {
-  userData: THREE.Group["userData"] & { update?: (dt: number) => void };
-};
 
 export function animate(config: AnimateConfig): () => void {
   const {
